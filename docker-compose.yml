@@ -14,7 +14,7 @@ services:
 
     ### no docker compose a pasta origem a criada pelo proprio docker compose
     volumes: 
-      - ./app:/home/app
+      - ./src:/usr/src/
     ports:
       - "22221:22"
       - "3001:3000"

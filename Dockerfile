@@ -1,36 +1,23 @@
 
-
 FROM emersonml/ror
 LABEL maintainer="Emerson Marques"
 
-RUN apt-get update
+ENV INSTALL_PATH /usr/src/
 
-RUN mkdir /home/app
+RUN /bin/bash -l -c "gem install rails -v 6.1.6"
 
-WORKDIR /home/app
-
-
-RUN useradd -ms /bin/bash app
-RUN adduser app sudo
-RUN echo 'app:app' |chpasswd
-
-
-USER root
-
+# RUN apt-get install -y git-all #### isso nao existe o GIT FICA NA PASTA HOPEDEIRA
 
 EXPOSE 22
 EXPOSE 3000
 
-VOLUME /home/app
+RUN mkdir -p $INSTALL_PATH
 
-# CMD ["rails", "server", "-b", "0.0.0.0"]
+VOLUME /usr/src/
+
+WORKDIR $INSTALL_PATH
+
+COPY . $INSTALL_PATH
 
 
-
-# Add a script to be executed every time the container starts.
-# COPY entrypoint.sh /usr/bin/
-# RUN chmod +x /usr/bin/entrypoint.sh
-# ENTRYPOINT ["entrypoint.sh"]
-
-# Configure the main process to run when running the image
-# CMD ["rails", "server", "-b", "0.0.0.0"]
+# docker image build -t my_proj_webcoruja .
