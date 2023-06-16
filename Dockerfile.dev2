@@ -1,0 +1,19 @@
+
+FROM ubuntu
+LABEL maintainer="Emerson Marques"
+
+ENV INSTALL_PATH /home/app/
+RUN mkdir -p $INSTALL_PATH
+WORKDIR $INSTALL_PATH
+
+RUN apt-get update
+RUN apt-get install -y openssh-server
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:emer888' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]

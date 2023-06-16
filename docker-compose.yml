@@ -7,14 +7,19 @@ services:
   #   environment:
   #     POSTGRES_PASSWORD: emer888
   app:
-    build: .
-    # command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    build:
+      context: .
+      dockerfile: Dockerfile.ubu
+      # command: bash -c "cd /usr/src/webcoruja && bundle exec rails s -p 3000 -b '0.0.0.0'"
+
+    # command: bash -c "rm -f tmp/pids/server.pid"
     # container_name: webcoruja
     # container_name: rails
 
     ### no docker compose a pasta origem a criada pelo proprio docker compose
     volumes: 
-      - ./src:/usr/src/
+      # - ./app:/usr/src/
+      - ./app:/home/app/
     ports:
       - "22221:22"
       - "3001:3000"

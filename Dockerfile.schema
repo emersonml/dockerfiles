@@ -1,0 +1,167 @@
+
+### UBUNTU |SSH|USER APP|VOLUME|ENTRYPOINT|
+
+FROM ubuntu
+LABEL maintainer="Emerson Marques"
+
+ENV workdir /home/app/
+RUN mkdir -p $workdir
+WORKDIR $workdir
+
+RUN apt-get update
+RUN apt-get install -y openssh-server
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:emer888' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+RUN apt-get install -y sudo
+RUN useradd -ms /bin/bash app
+RUN adduser app sudo
+RUN echo 'app:emer777' | chpasswd
+RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+# RUN sudo chmod 0440 /etc/sudoers.d/app
+
+EXPOSE 22
+
+VOLUME $workdir
+
+CMD ["/usr/sbin/sshd", "-D"]
+
+COPY entrypoint.sh /home/app/
+RUN chmod +x $workdir/entrypoint.sh
+ENTRYPOINT ["/bin/bash", "./home/app/entrypoint.sh"]
+
+
+
+
+FROM ubuntu
+LABEL maintainer="Emerson Marques"
+
+ENV INSTALL_PATH /home/app/
+RUN mkdir -p $INSTALL_PATH
+WORKDIR $INSTALL_PATH
+
+RUN apt-get update
+RUN apt-get install -y openssh-server
+
+RUN apt-get update
+RUN apt-get install -y build-essential automake autoconf \
+    bison libssl-dev libyaml-dev libreadline6-dev \
+    zlib1g-dev libncurses5-dev libffi-dev libgdbm-dev \
+    gawk g++ gcc make libc6-dev patch libsqlite3-dev sqlite3 \
+    libtool pkg-config libpq-dev nodejs ruby-full
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:emer888' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+RUN apt-get install -y sudo
+RUN useradd -ms /bin/bash app
+RUN adduser app sudo
+RUN echo 'app:emer777' | chpasswd
+# RUN chmod 0440 /etc/sudoers.d/app
+RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+# RUN /bin/bash -l -c "apt-get update &&  apt-get -y install gnupg2" 
+# RUN /bin/bash -l -c "gpg2 --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB"
+# RUN /bin/bash -l -c "curl -sSL https://get.rvm.io | bash -s stable"
+
+#  RUN /bin/bash -l -c "touch ttt"
+# RUN /bin/bash -l -c "gem install rails -v 6.1.6"
+
+
+# RUN /bin/bash -l -c "sudo chown root:sudo /usr/local/rvm/"
+# RUN /bin/bash -l -c "sudo source /home/app/.rvm/scripts/rvm"
+
+# USER root
+# RUN /bin/bash -l -c "gem install bundler"
+
+# EXPOSE 3000
+
+
+# VOLUME $INSTALL_PATH
+
+
+
+
+# COPY . .
+
+# COPY entrypoint.sh /usr/src/
+# RUN chmod +x /usr/src/entrypoint.sh
+# ENTRYPOINT ["/usr/src/entrypoint.sh"]
+
+
+
+FROM emersonml/ror
+LABEL maintainer="Emerson Marques"
+
+ENV INSTALL_PATH /home/app/
+ENV INSTALL_PATH2 /home/app/teste2/
+RUN mkdir -p $INSTALL_PATH
+RUN mkdir -p $INSTALL_PATH2
+RUN mkdir -p /home/app/teste/
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+
+RUN apt-get install -y sudo
+RUN useradd -ms /bin/bash app
+RUN adduser app sudo
+RUN echo 'app:app' | chpasswd
+# RUN chmod 0440 /etc/sudoers.d/app
+RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+
+
+USER app
+
+RUN echo "app" | sudo -S /bin/bash -l -c "sudo echo `who` | tee -a teee" 
+RUN echo "app" | sudo -S /bin/bash -l -c "sudo echo `who` > /home/app/teste3" 
+RUN echo "app" | sudo -S /bin/bash -l -c "sudo echo `who` | tee -a teee" 
+
+RUN /bin/bash -l -c "sudo chown root:app /var/lib/dpkg/lock"
+RUN /bin/bash -l -c "sudo chown root:app /var/cache/apt/archives/lock"
+RUN /bin/bash -l -c "sudo chmod 660 /var/lib/dpkg/lock"
+RUN /bin/bash -l -c "sudo chmod 660 /var/cache/apt/archives/lock"
+
+USER root
+RUN echo "app" | sudo -S /bin/bash -l -c "echo `who` | tee -a teee" 
+
+EXPOSE 22
+EXPOSE 3000
+
+
+
+
+# docker image build -t my_proj_webcoruja .
+
+
+
+
+# RUN echo 'Banner /etc/banner' >> /etc/ssh/sshd_config
+
+
+
+# docker image build -t ubuntu-3 -f Dockerfile.create .

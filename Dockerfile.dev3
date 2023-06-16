@@ -1,0 +1,35 @@
+### UBUNTU COM SSH E USER_APP
+
+FROM ubuntu
+LABEL maintainer="Emerson Marques"
+
+ENV INSTALL_PATH /home/app/
+RUN mkdir -p $INSTALL_PATH
+WORKDIR $INSTALL_PATH
+
+RUN apt-get update
+RUN apt-get install -y openssh-server
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:emer888' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+RUN apt-get install -y sudo
+RUN useradd -ms /bin/bash app
+RUN adduser app sudo
+RUN echo 'app:emer777' | chpasswd
+RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+# RUN sudo chmod 0440 /etc/sudoers.d/app
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]
+
+
+
+#### CRIAR BILDAR E IMG E SUBIR CONTAINER 
+# docker image build -t ubuntu3 -f Dockerfile.create .
+# sudo docker run -d -p 22223:22 --name cont3 ubuntu3

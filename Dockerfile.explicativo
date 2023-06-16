@@ -1,0 +1,102 @@
+
+# Dockerfile.ssh
+
+# Estender a imagem base do Ubuntu
+FROM ubuntu
+LABEL maintainer="Emerson Marques"
+
+ENV INSTALL_PATH /home/app/
+RUN mkdir -p $INSTALL_PATH
+WORKDIR $INSTALL_PATH
+
+# Atualizar o sistema e instalar o servidor SSH
+RUN apt-get update && apt-get install -y openssh-server
+RUN mkdir /var/run/sshd
+
+# Configurar uma senha para o usuário root (substitua 'sua_senha' pela senha desejada)
+RUN echo 'root:emer888' | chpasswd
+
+# Permitir acesso root via SSH
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# desabilita o PAN
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+
+# Expor a porta SSH
+EXPOSE 22
+
+# Iniciar o servidor SSH
+CMD ["/usr/sbin/sshd", "-D"]
+
+
+
+
+RUN apt-get update
+RUN apt-get install -y openssh-server vim curl
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' |chpasswd
+RUN sed -ri 's/^PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+EXPOSE 22
+
+
+
+# RUN apt-get update
+# RUN apt-get install -y build-essential automake autoconf \
+#     bison libssl-dev libyaml-dev libreadline6-dev \
+#     zlib1g-dev libncurses5-dev libffi-dev libgdbm-dev \
+#     gawk g++ gcc make libc6-dev patch libsqlite3-dev sqlite3 \
+#     libtool pkg-config libpq-dev nodejs ruby-full
+
+
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+# RUN apt-get install -y sudo
+# RUN useradd -ms /bin/bash app
+# RUN adduser app sudo
+# RUN echo 'app:app' | chpasswd
+# # RUN chmod 0440 /etc/sudoers.d/app
+# RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+# RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+
+
+
+# RUN /bin/bash -l -c "apt-get update &&  apt-get -y install gnupg2" 
+# RUN /bin/bash -l -c "gpg2 --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB"
+# RUN /bin/bash -l -c "curl -sSL https://get.rvm.io | bash -s stable"
+
+#  RUN /bin/bash -l -c "touch ttt"
+# RUN /bin/bash -l -c "gem install rails -v 6.1.6"
+
+
+# RUN /bin/bash -l -c "sudo chown root:sudo /usr/local/rvm/"
+# RUN /bin/bash -l -c "sudo source /home/app/.rvm/scripts/rvm"
+
+# USER root
+# RUN /bin/bash -l -c "gem install bundler"
+
+# EXPOSE 3000
+
+
+# VOLUME $INSTALL_PATH
+
+
+
+
+# COPY . .
+
+# COPY entrypoint.sh /usr/src/
+# RUN chmod +x /usr/src/entrypoint.sh
+# ENTRYPOINT ["/usr/src/entrypoint.sh"]
+
+
+
+
+# RUN echo 'Banner /etc/banner' >> /etc/ssh/sshd_config
+
+
+
+# docker image build -t ubuntu-3 -f Dockerfile.create .

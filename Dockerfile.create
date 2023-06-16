@@ -1,0 +1,41 @@
+
+### UBUNTU |SSH|USER APP|VOLUME|ENTRYPOINT|
+
+FROM ubuntu
+LABEL maintainer="Emerson Marques"
+
+ENV workdir /home/app/
+RUN mkdir -p $workdir
+WORKDIR $workdir
+
+RUN apt-get update
+RUN apt-get install -y openssh-server
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:emer888' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+RUN apt-get install -y sudo
+RUN useradd -ms /bin/bash app
+RUN adduser app sudo
+RUN echo 'app:emer777' | chpasswd
+RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+# RUN sudo chmod 0440 /etc/sudoers.d/app
+
+EXPOSE 22
+
+VOLUME $workdir
+
+CMD ["/usr/sbin/sshd", "-D"]
+
+# COPY entrypoint.sh /home/app/
+COPY okok .
+# RUN chmod +x $workdir/entrypoint.sh
+# ENTRYPOINT ["/bin/bash", "./home/app/entrypoint.sh"]
+
+
+
+# docker image build -t ubuntu2 -f Dockerfile.create .
