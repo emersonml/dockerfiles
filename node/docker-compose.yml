@@ -9,7 +9,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.ubu
+      dockerfile: Dockerfile.dev
       # command: bash -c "cd /usr/src/webcoruja && bundle exec rails s -p 3000 -b '0.0.0.0'"
 
     # command: bash -c "rm -f tmp/pids/server.pid"
@@ -19,15 +19,17 @@ services:
     ### no docker compose a pasta origem a criada pelo proprio docker compose
     volumes: 
       # - ./app:/usr/src/
-      - ./app:/home/app/
+      # - ./app:/home/app/
     ports:
-      - "22221:22"
-      - "3001:3000"
+      # - "22221:22"
+      # - "3001:3000"
       
     # depends_on:
     #   - db
 
 
 
+### docker compose up -d
+# ssh root@localhost -p 22221
 ### docker compose run --no-deps web
 ### docker compose run --no-deps web rails new . --force --database=postgresql
