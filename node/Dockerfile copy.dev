@@ -26,8 +26,11 @@ RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
 # RUN sudo chmod 0440 /etc/sudoers.d/app
 
 
-
-
+### INICIANDO O NODE
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+RUN /bin/bash -c "source ~/.nvm/nvm.sh"
+RUN /bin/bash -c "nvm install 14.19.1"
+RUN /bin/bash -c "nvm alias default 14.19.1"
 
 
 
@@ -38,9 +41,6 @@ VOLUME $WORKDIR
 
 CMD ["/usr/sbin/sshd", "-D"]
 
-
-
-
 # COPY entrypoint.sh /home/app/
 COPY teste .
 # RUN chmod +x $WORKDIR/entrypoint.sh
@@ -48,5 +48,6 @@ COPY teste .
 
 
 
-# docker image build -t ubuntu -f Dockerfile.dev .
-# sudo docker run -d -v $(pwd)app:/home/app -p 22221:22 --name ubuntu ubuntu
+#########################################################
+# docker image build -t node_i -f Dockerfile.dev .
+# sudo docker run -d -v $(pwd)app:/home/app -p 22222:22 --name node_c node_i

@@ -1,69 +1,60 @@
-FROM buildpack-deps:bullseye
+FROM ubuntu
 
-RUN groupadd --gid 1000 node \
-  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+LABEL maintainer="Emerson Marques"
 
-ENV NODE_VERSION 16.20.1
+ENV WORKDIR /home/app/
+ENV VERSAO_NODE 14.19.1
+RUN mkdir -p $WORKDIR
+WORKDIR $WORKDIR
 
-RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
-  && case "${dpkgArch##*-}" in \
-    amd64) ARCH='x64';; \
-    ppc64el) ARCH='ppc64le';; \
-    s390x) ARCH='s390x';; \
-    arm64) ARCH='arm64';; \
-    armhf) ARCH='armv7l';; \
-    i386) ARCH='x86';; \
-    *) echo "unsupported architecture"; exit 1 ;; \
-  esac \
-  # gpg keys listed at https://github.com/nodejs/node#release-keys
-  && set -ex \
-  && for key in \
-    4ED778F539E3634C779C87C6D7062848A1AB005C \
-    141F07595B7B3FFE74309A937405533BE57C7D57 \
-    74F12602B6F1C4E913FAA37AD3A89613643B6201 \
-    DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7 \
-    61FC681DFB92A079F1685E77973F295594EC4689 \
-    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
-    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
-    890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
-    C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
-    108F52B48DB57BB0CC439B2997B01419BD92F80A \
-  ; do \
-      gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
-      gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
-  done \
-  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.xz" \
-  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
-  && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
-  && grep " node-v$NODE_VERSION-linux-$ARCH.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
-  && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
-  && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
-  && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
-  # smoke tests
-  && node --version \
-  && npm --version
+RUN apt-get update && \
+    apt-get install -y curl
 
-ENV YARN_VERSION 1.22.19
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 
-RUN set -ex \
-  && for key in \
-    6A010C5166006599AA17F08146C2130DFD2497F5 \
-  ; do \
-    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
-  done \
-  && curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz" \
-  && curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz.asc" \
-  && gpg --batch --verify yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz \
-  && mkdir -p /opt \
-  && tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/ \
-  && ln -s /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn \
-  && ln -s /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg \
-  && rm yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz \
-  # smoke test
-  && yarn --version
+# Definir NVM_DIR e carregar o NVM
+ENV NVM_DIR /root/.nvm
+ENV SH_VERSION 0.5.5
+RUN /bin/bash -c "mkdir -p $NVM_DIR && \
+                  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/nvm.sh -o $NVM_DIR/nvm.sh && \
+                  echo \"[ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh\" >> /root/.bashrc && \
+                  echo \"[ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh\" >> /root/.profile"
 
-COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Instalar o Node.js 14.19.1
+RUN /bin/bash -c "export NVM_DIR=$NVM_DIR && \
+                  [ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh && \
+                  nvm install $VERSAO_NODE && \
+                  nvm alias default $VERSAO_NODE"
 
-CMD [ "node" ]
+# Instalar o yarn
+
+
+RUN apt-get install -y openssh-server
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+### CRIANDO USER APP E DANDO PODERES DE SUDO
+RUN apt-get install -y sudo
+RUN useradd -ms /bin/bash app
+RUN adduser app sudo
+RUN echo 'app:app' | chpasswd
+RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
+RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
+# RUN sudo chmod 0440 /etc/sudoers.d/app
+
+EXPOSE 22
+
+VOLUME $WORKDIR
+
+CMD ["/usr/sbin/sshd", "-D"]
+
+
+
+
+#########################################################
+# echo="3"; docker image build -t img$xxx -f Dockerfile.dev . ; 
+# docker run -d -v $(pwd)app:/home/app -p 2222$xxx:22 --name con$xxx img$xxx ; ssh root@localhost -p 2222$xxx
+

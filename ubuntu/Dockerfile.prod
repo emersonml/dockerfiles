@@ -12,7 +12,7 @@ RUN apt-get update
 RUN apt-get install -y openssh-server
 
 RUN mkdir /var/run/sshd
-RUN echo 'root:emer888' | chpasswd
+RUN echo 'root:root' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
 
@@ -20,7 +20,7 @@ RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
 RUN apt-get install -y sudo
 RUN useradd -ms /bin/bash app
 RUN adduser app sudo
-RUN echo 'app:emer777' | chpasswd
+RUN echo 'app:app' | chpasswd
 RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
 RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
 # RUN sudo chmod 0440 /etc/sudoers.d/app
@@ -38,5 +38,5 @@ COPY teste .
 
 
 
-# docker image build -t ubuntu -f ubuntu/Dockerfile ubuntu/
+# docker image build -t ubuntu -f Dockerfile.prod .
 # sudo docker run -d -v $(pwd)app:/home/app -p 22221:22 --name ubuntu ubuntu
