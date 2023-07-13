@@ -21,7 +21,7 @@ services:
       # - ./app:/usr/src/
       - ./app:/home/app/
     ports:
-      - "22222:22"
+      - "22221:22"
       # - "3001:3000"
       
     # depends_on:
@@ -29,7 +29,8 @@ services:
 
 
 
-### docker compose up -d
+# docker compose up -d
 # ssh root@localhost -p 22222
 ### docker compose run --no-deps web
 ### docker compose run --no-deps web rails new . --force --database=postgresql
+##

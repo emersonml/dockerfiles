@@ -1,14 +1,40 @@
-
-### UBUNTU |SSH|USER APP|VOLUME|ENTRYPOINT|
-
 FROM ubuntu
+
 LABEL maintainer="Emerson Marques"
 
 ENV WORKDIR /home/app/
+ENV VERSAO_NODE 14.19.1
 RUN mkdir -p $WORKDIR
 WORKDIR $WORKDIR
 
-RUN apt-get update
+RUN apt-get update && \
+    apt-get install -y curl
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+
+# Definir NVM_DIR e carregar o NVM
+ENV NVM_DIR /root/.nvm
+ENV SH_VERSION 0.5.5
+RUN /bin/bash -c "mkdir -p $NVM_DIR && \
+                  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/nvm.sh -o $NVM_DIR/nvm.sh && \
+                  echo \"[ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh\" >> /root/.bashrc && \
+                  echo \"[ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh\" >> /root/.profile"
+
+# Instalar o Node.js 14.19.1
+RUN /bin/bash -c "export NVM_DIR=$NVM_DIR && \
+                  [ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh && \
+                  nvm install $VERSAO_NODE && \
+                  nvm alias default $VERSAO_NODE"
+
+# Instalar o Yarn 1.22
+RUN curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.22.10
+
+# Definir o caminho do Yarn no PATH
+ENV PATH="/root/.yarn/bin:$PATH"
+
+
+
+
 RUN apt-get install -y openssh-server
 
 RUN mkdir /var/run/sshd
@@ -25,29 +51,8 @@ RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
 RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
 # RUN sudo chmod 0440 /etc/sudoers.d/app
 
-
-### INICIANDO O NODE
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-RUN /bin/bash -c "source ~/.nvm/nvm.sh"
-RUN /bin/bash -c "nvm install 14.19.1"
-RUN /bin/bash -c "nvm alias default 14.19.1"
-
-
-
-
 EXPOSE 22
 
 VOLUME $WORKDIR
 
 CMD ["/usr/sbin/sshd", "-D"]
-
-# COPY entrypoint.sh /home/app/
-COPY teste .
-# RUN chmod +x $WORKDIR/entrypoint.sh
-# ENTRYPOINT ["/bin/bash", "./home/app/entrypoint.sh"]
-
-
-
-#########################################################
-# docker image build -t node_i -f Dockerfile.dev .
-# sudo docker run -d -v $(pwd)app:/home/app -p 22222:22 --name node_c node_i

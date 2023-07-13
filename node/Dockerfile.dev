@@ -10,25 +10,27 @@ WORKDIR $WORKDIR
 RUN apt-get update && \
     apt-get install -y curl
 
+# Instalar o NVM
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 
-# Definir NVM_DIR e carregar o NVM
+# Configurar o NVM
 ENV NVM_DIR /root/.nvm
-ENV SH_VERSION 0.5.5
-RUN /bin/bash -c "mkdir -p $NVM_DIR && \
-                  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/nvm.sh -o $NVM_DIR/nvm.sh && \
-                  echo \"[ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh\" >> /root/.bashrc && \
-                  echo \"[ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh\" >> /root/.profile"
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $VERSAO_NODE && nvm alias default $VERSAO_NODE"
 
-# Instalar o Node.js 14.19.1
-RUN /bin/bash -c "export NVM_DIR=$NVM_DIR && \
-                  [ -s $NVM_DIR/nvm.sh ] && . $NVM_DIR/nvm.sh && \
-                  nvm install $VERSAO_NODE && \
-                  nvm alias default $VERSAO_NODE"
+# Instalar o Yarn
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && npm install -g yarn@1.22.10"
 
-# Instalar o yarn
+# Instalar o Node.js e o npm
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $VERSAO_NODE && nvm use $VERSAO_NODE && npm install -g npm@latest"
+
+# Instalar o Prisma
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && npm install -g prisma@3.15.2"
+
+# Restante do seu Dockerfile...
 
 
+
+# SSH
 RUN apt-get install -y openssh-server
 
 RUN mkdir /var/run/sshd
@@ -45,16 +47,11 @@ RUN sudo echo 'app   ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers
 RUN sudo echo "app   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/app
 # RUN sudo chmod 0440 /etc/sudoers.d/app
 
+
 EXPOSE 22
-
 VOLUME $WORKDIR
-
 CMD ["/usr/sbin/sshd", "-D"]
 
-
-
-
-#########################################################
-# echo="3"; docker image build -t img$xxx -f Dockerfile.dev . ; 
-# docker run -d -v $(pwd)app:/home/app -p 2222$xxx:22 --name con$xxx img$xxx ; ssh root@localhost -p 2222$xxx
-
+####
+# docker image build -t ubuntu -f ubuntu/Dockerfile ubuntu/
+# sudo docker run -d -v $(pwd)app:/home/app -p 22221:22 --name ubuntu ubuntu
